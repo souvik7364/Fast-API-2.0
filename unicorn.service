@@ -1,0 +1,14 @@
+[Unit]
+Description=demo fastapi application
+After=network.target
+
+[Service]
+User=souvik
+Group=souvik
+WorkingDirectory=/home/souvik/app/src/
+Environment="PATH=/home/souvik/app/venv/bin"
+EnvironmentFile=/home/souvik/.env
+ExecStart=/home/souvik/app/venv/bin/uvicorn app.main:app --workers 2 --host 127.0.0.1 --port 8000
+
+[Install]
+WantedBy=multi-user.target
