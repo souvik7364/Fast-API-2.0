@@ -10,10 +10,31 @@ class Post(BaseModel):
 class UserOut(BaseModel):
     id: int
     email: EmailStr
+    username: str
+    about: str
     created_at: datetime
 
     class Config:
-            from_attributes = True
+        from_attributes = True
+
+
+class UserPublic(BaseModel):
+    id: int
+    username: str
+    about: str
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+class FollowOut(BaseModel):
+    follower_username: str
+    followed_username: str
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
 
 class PostResponse(BaseModel):
     id: int
@@ -22,7 +43,7 @@ class PostResponse(BaseModel):
     published: bool
     created_at: datetime
     owner_id: int
-    owner: UserOut
+    owner: UserPublic
 
     class Config:
         from_attributes = True    
@@ -30,15 +51,26 @@ class PostResponse(BaseModel):
 
 class PostOut(BaseModel):
     Post: PostResponse
-    votes: int
+    likes: int
 
     class Config:
         from_attributes = True
 
 
 class UserCreate(BaseModel):
+    username: str = Field(min_length=3, max_length=30, pattern=r"^[A-Za-z0-9_]+$")
     email: EmailStr
     password: str
+
+
+class UserUpdate(BaseModel):
+    username: Optional[str] = Field(
+        default=None,
+        min_length=3,
+        max_length=30,
+        pattern=r"^[A-Za-z0-9_]+$",
+    )
+    about: Optional[str] = Field(default=None, max_length=280)
 
 
 class UserLogin(BaseModel):
@@ -55,3 +87,19 @@ class TokenData(BaseModel):
 class Vote(BaseModel):
      post_id: int
      dir: Annotated[int, Field(ge=0, le=1)]
+
+
+class ReplyCreate(BaseModel):
+    content: str = Field(min_length=1, max_length=280)
+
+
+class ReplyOut(BaseModel):
+    id: int
+    content: str
+    created_at: datetime
+    post_id: int
+    owner_id: int
+    owner: UserPublic
+
+    class Config:
+        from_attributes = True
