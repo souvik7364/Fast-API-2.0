@@ -90,7 +90,7 @@ class Vote(BaseModel):
 
 
 class ReplyCreate(BaseModel):
-    content: str = Field(min_length=1, max_length=280)
+    content: str = Field(min_length=1, max_length=500_000)
 
 
 class ReplyOut(BaseModel):

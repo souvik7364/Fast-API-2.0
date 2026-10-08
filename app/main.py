@@ -1,3 +1,4 @@
+import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from . import models
@@ -11,10 +12,16 @@ print(settings.database_username)
 
 app = FastAPI()
 
-origins = [
+local_origins = [
     "http://localhost:5500",
     "http://127.0.0.1:5500",
 ]
+configured_origins = [
+    origin.strip().rstrip("/")
+    for origin in os.getenv("FRONTEND_ORIGINS", "").split(",")
+    if origin.strip()
+]
+origins = list(dict.fromkeys([*local_origins, *configured_origins]))
 
 app.add_middleware(
     CORSMiddleware,

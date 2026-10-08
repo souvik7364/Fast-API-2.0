@@ -1,0 +1,276 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#e9eaec">
+    <title>CHITTHI — conversations that matter</title>
+    <link rel="icon" type="image/svg+xml" href="chitthi-icon.svg?v=postcard-20261008">
+    <link rel="stylesheet" href="styles.css?v=chitthi-delete-post-20261009">
+    <!-- Ordered classic scripts share the existing app state; keep defer and this order. -->
+    <script src="./config.js?v=20261009-api-config" defer></script>
+    <script src="./js/00-state.js?v=20261009-api-config" defer></script>
+    <script src="./js/01-appearance-auth.js?v=20261009-api-config" defer></script>
+    <script src="./js/02-profile-media.js?v=20261009" defer></script>
+    <script src="./js/03-posts.js?v=20261009-delete-post" defer></script>
+    <script src="./js/04-follows.js?v=20261009" defer></script>
+    <script src="./js/05-replies-feed.js?v=20261009-infinite-scroll" defer></script>
+    <script src="./js/06-profiles.js?v=20261009-infinite-scroll" defer></script>
+    <script src="./js/07-ui-events.js?v=20261009-infinite-scroll-v2" defer></script>
+  </head>
+  <body>
+    <div class="page-shell">
+      <header class="topbar">
+        <a class="brand" href="#top" aria-label="CHITTHI home">
+          <span class="brand-mark" aria-hidden="true"></span>
+          <span>CHITTHI</span>
+        </a>
+        <form id="user-search-form" class="topbar-search" role="search" hidden>
+          <label class="visually-hidden" for="user-search-input">Find people by username</label>
+          <input id="user-search-input" type="search" minlength="1" maxlength="30" placeholder="Search people by username" autocomplete="off" required>
+          <button type="submit" aria-label="Search usernames">⌕</button>
+          <div id="user-search-results" class="user-search-results" hidden></div>
+        </form>
+        <button id="profile-settings-button" class="settings-trigger" type="button" aria-label="Open settings" title="Settings" hidden><span aria-hidden="true">⚙</span><span>Settings</span></button>
+      </header>
+
+      <main id="top">
+        <section id="auth-view" class="auth-layout">
+          <div class="welcome-panel">
+            <span class="eyebrow">YOUR SPACE TO SHARE</span>
+            <h1>Good ideas travel<br><span>when we talk.</span></h1>
+            <p>Follow people, share what’s on your mind, and join the conversation one post at a time.</p>
+            <div class="welcome-doodle" aria-hidden="true">
+              <span class="doodle-dot dot-one"></span>
+              <span class="doodle-dot dot-two"></span>
+              <span class="doodle-dot dot-three"></span>
+              <span class="doodle-line"></span>
+              <span class="doodle-bubble">hello!</span>
+            </div>
+          </div>
+
+          <section class="auth-card" aria-labelledby="auth-title">
+            <div class="auth-tabs" role="tablist" aria-label="Account options">
+              <button id="login-tab" class="auth-tab is-active" type="button" role="tab" aria-selected="true">Log in</button>
+              <button id="register-tab" class="auth-tab" type="button" role="tab" aria-selected="false">Create account</button>
+            </div>
+            <h2 id="auth-title">Welcome back</h2>
+            <p id="auth-copy" class="muted">Log in to catch up with your people.</p>
+
+            <form id="login-form" class="auth-form">
+              <label for="login-email">Email</label>
+              <input id="login-email" name="email" type="email" autocomplete="username" placeholder="you@example.com" required>
+              <label for="login-password">Password</label>
+              <input id="login-password" name="password" type="password" autocomplete="current-password" placeholder="Your password" required>
+              <button class="button button-primary button-wide" type="submit">Log in <span aria-hidden="true">→</span></button>
+            </form>
+
+            <form id="register-form" class="auth-form" hidden>
+              <label for="register-username">Username</label>
+              <input id="register-username" name="username" type="text" minlength="3" maxlength="30" pattern="[A-Za-z0-9_]+" autocomplete="username" placeholder="letters, numbers, underscores" required>
+              <label for="register-email">Email</label>
+              <input id="register-email" name="email" type="email" autocomplete="email" placeholder="you@example.com" required>
+              <label for="register-password">Password</label>
+              <input id="register-password" name="password" type="password" autocomplete="new-password" minlength="8" placeholder="At least 8 characters" required>
+              <button class="button button-primary button-wide" type="submit">Create account <span aria-hidden="true">→</span></button>
+            </form>
+            <p id="auth-status" class="form-status" role="status" aria-live="polite"></p>
+            <p class="auth-footnote">Your account connects to the FastAPI backend running on your machine.</p>
+          </section>
+        </section>
+
+        <section id="app-view" class="app-layout" hidden>
+          <aside class="profile-sidebar" aria-label="Your profile and connections">
+            <section class="sidebar-profile">
+              <span id="sidebar-avatar" class="sidebar-avatar" aria-hidden="true">@</span>
+              <div class="sidebar-identity">
+                <h2 id="sidebar-username"></h2>
+              <p id="sidebar-email"></p>
+              </div>
+              <p id="sidebar-about" class="sidebar-about"></p>
+              <button id="my-profile-button" class="button button-quiet sidebar-profile-link" type="button">View my profile</button>
+            </section>
+
+            <form id="compose-form" class="compose-card sidebar-compose-card" data-expanded="false">
+              <button id="compose-trigger" class="compose-trigger" type="button" aria-expanded="false">
+                <span aria-hidden="true">＋</span> Share a post
+              </button>
+              <div class="compose-fields" hidden>
+                <label class="visually-hidden" for="post-content">Post content</label>
+                <textarea id="post-content" name="content" rows="4" placeholder="What’s on your mind?"></textarea>
+                <div class="image-attachment-row">
+                  <label class="button button-quiet image-picker" for="post-image-input"><span aria-hidden="true">▧</span> Add picture</label>
+                  <input id="post-image-input" class="visually-hidden" type="file" accept="image/*">
+                  <span id="post-image-name" class="image-attachment-name">Text or one picture</span>
+                  <button id="remove-post-image" class="button button-quiet" type="button" hidden>Remove</button>
+                </div>
+                <div id="post-image-preview" class="post-image-preview" hidden></div>
+                <div class="compose-actions">
+                  <button id="compose-cancel" class="button button-quiet compose-cancel" type="button">Cancel</button>
+                  <button class="button button-primary" type="submit">Post <span aria-hidden="true">↗</span></button>
+                </div>
+              </div>
+            </form>
+
+            <nav class="library-card" aria-label="Your posts">
+              <p class="library-heading">YOUR POSTS</p>
+              <button id="saved-list-button" class="library-link" type="button">
+                <span aria-hidden="true">▣</span><span>Saved posts</span><span id="saved-count" class="library-count">0</span>
+              </button>
+              <button id="liked-list-button" class="library-link" type="button">
+                <span aria-hidden="true">↑</span><span>Liked posts</span><span id="liked-count" class="library-count"></span>
+              </button>
+              <button id="sidebar-settings-button" class="library-link settings-library-link" type="button">
+                <span aria-hidden="true">⚙</span><span>Settings</span>
+              </button>
+            </nav>
+
+            <section class="connections-card" aria-label="Followers and following">
+              <div class="connection-tabs" role="tablist" aria-label="Connections">
+                <button id="following-tab" class="connection-tab is-active" type="button" role="tab" aria-selected="true">
+                  Following <span id="following-count">0</span>
+                </button>
+                <button id="followers-tab" class="connection-tab" type="button" role="tab" aria-selected="false">
+                  Followers <span id="followers-count">0</span>
+                </button>
+              </div>
+              <p id="connections-status" class="connections-status" role="status" aria-live="polite">Loading connections…</p>
+              <div id="connections-list" class="connections-list"></div>
+            </section>
+
+          </aside>
+
+          <section class="feed-column" aria-label="Your feed">
+            <div class="feed-heading">
+              <div>
+                <h1 id="feed-heading-title">Your feed</h1>
+              </div>
+              <button id="refresh-button" class="button button-quiet" type="button" aria-label="Refresh feed">↻ <span>Refresh</span></button>
+            </div>
+
+            <div id="feed-tabs" class="feed-tabs" role="tablist" aria-label="Post feed">
+              <button id="all-posts-tab" class="feed-tab is-active" type="button" role="tab" aria-selected="true">All posts</button>
+              <button id="following-feed-tab" class="feed-tab" type="button" role="tab" aria-selected="false">Following</button>
+            </div>
+
+            <section id="public-profile-view" class="public-profile-view" aria-label="User profile" hidden>
+              <button id="profile-back-button" class="profile-back" type="button" aria-label="Back to feed" title="Back to feed">←</button>
+              <div id="public-profile-card" class="public-profile-card"></div>
+              <div id="profile-workspace" class="profile-workspace">
+                <section class="profile-content-column">
+                  <nav id="public-profile-tabs" class="public-profile-tabs" aria-label="Profile sections"></nav>
+                  <div id="profile-compose-column" class="profile-compose-column" hidden>
+                    <div id="profile-compose-slot"></div>
+                  </div>
+                  <p id="public-profile-status" class="feed-status" role="status" aria-live="polite"></p>
+                  <div id="public-profile-posts" class="feed-list"></div>
+                  <div id="public-profile-connections" class="profile-connections-list" hidden></div>
+                  <button id="public-profile-more" class="button button-outline button-wide load-more" type="button" hidden>Load more posts</button>
+                </section>
+              </div>
+            </section>
+
+            <div id="feed-content">
+              <p id="feed-status" class="feed-status" role="status" aria-live="polite"></p>
+              <div id="feed-list" class="feed-list"></div>
+              <button id="load-more" class="button button-outline button-wide load-more" type="button" hidden>Load more posts</button>
+            </div>
+          </section>
+
+        </section>
+      </main>
+      <div id="toast" class="toast" role="status" aria-live="polite"></div>
+      <dialog id="profile-editor-dialog" class="profile-dialog">
+        <form id="profile-form" class="profile-edit-form">
+          <div class="profile-dialog-heading">
+            <div><span class="eyebrow">YOUR ACCOUNT</span><h2>Edit profile</h2></div>
+            <button id="close-profile-dialog" class="dialog-close" type="button" aria-label="Close">×</button>
+          </div>
+          <label for="profile-username">Username</label>
+          <input id="profile-username" name="username" type="text" minlength="3" maxlength="30" pattern="[A-Za-z0-9_]+" required>
+          <label>Profile picture</label>
+          <div class="profile-picture-control">
+            <span id="profile-picture-preview" class="profile-picture-preview">?</span>
+            <div class="profile-picture-actions">
+              <label class="button button-outline choose-picture-button" for="profile-picture-input">Choose picture</label>
+              <input id="profile-picture-input" class="visually-hidden" type="file" accept="image/*">
+              <span id="profile-picture-filename" class="profile-picture-filename">Choose an image from your device</span>
+              <button id="remove-profile-picture" class="profile-remove-button" type="button">Remove picture</button>
+            </div>
+          </div>
+          <p class="profile-picture-note">Saved in this browser for this account.</p>
+          <label for="profile-cover-input">Profile background</label>
+          <div class="profile-cover-control">
+            <div id="profile-cover-preview" class="profile-cover-preview">Default profile background</div>
+            <label class="button button-outline choose-picture-button" for="profile-cover-input">Choose background</label>
+            <input id="profile-cover-input" class="visually-hidden" type="file" accept="image/*">
+            <button id="remove-profile-cover" class="profile-remove-button" type="button">Remove background</button>
+          </div>
+          <p class="profile-picture-note">This background is saved in this browser.</p>
+          <label for="profile-about">About</label>
+          <textarea id="profile-about" name="about" maxlength="280" rows="4" placeholder="A little about you"></textarea>
+          <p id="profile-status" class="form-status" role="status" aria-live="polite"></p>
+          <div class="profile-dialog-actions">
+            <button id="cancel-profile-edit" class="button button-quiet" type="button">Cancel</button>
+            <button class="button button-primary" type="submit">Save changes</button>
+          </div>
+        </form>
+      </dialog>
+      <dialog id="image-crop-dialog" class="image-crop-dialog">
+        <section class="image-crop-panel" aria-labelledby="image-crop-title">
+          <div class="profile-dialog-heading">
+            <div><span class="eyebrow">IMAGE POSITION</span><h2 id="image-crop-title">Crop image</h2></div>
+            <button id="close-image-crop" class="dialog-close" type="button" aria-label="Close crop tool">×</button>
+          </div>
+          <div id="image-crop-preview" class="image-crop-preview image-crop-preview-avatar" role="img" aria-label="Image crop preview"></div>
+          <div class="image-crop-controls">
+            <label for="image-crop-horizontal">Horizontal position</label>
+            <input id="image-crop-horizontal" type="range" min="0" max="100" value="50">
+            <label for="image-crop-vertical">Vertical position</label>
+            <input id="image-crop-vertical" type="range" min="0" max="100" value="50">
+            <label for="image-crop-zoom">Zoom</label>
+            <input id="image-crop-zoom" type="range" min="100" max="300" value="100">
+          </div>
+          <div class="profile-dialog-actions">
+            <button id="cancel-image-crop" class="button button-quiet" type="button">Cancel</button>
+            <button id="apply-image-crop" class="button button-primary" type="button">Use image</button>
+          </div>
+        </section>
+      </dialog>
+      <dialog id="settings-dialog" class="settings-dialog">
+        <div class="settings-panel">
+          <div class="profile-dialog-heading">
+            <div><span class="eyebrow">PREFERENCES</span><h2>Settings</h2></div>
+            <button id="close-settings-dialog" class="dialog-close" type="button" aria-label="Close">×</button>
+          </div>
+          <div id="account-area" class="settings-account" hidden>
+            <div class="settings-account-identity">
+              <span id="account-username" class="settings-account-name"></span>
+              <span id="account-email" class="settings-account-email"></span>
+            </div>
+          </div>
+          <section class="settings-section" aria-labelledby="appearance-heading">
+            <h3 id="appearance-heading">Appearance</h3>
+            <label class="settings-row theme-switch" for="dark-mode-toggle">
+              <span><strong>Dark mode</strong><small>Use a darker color scheme</small></span>
+              <input id="dark-mode-toggle" type="checkbox" role="switch" aria-label="Dark mode">
+              <span class="theme-switch-track" aria-hidden="true"><span class="theme-switch-thumb"></span></span>
+            </label>
+            <div class="settings-row background-setting">
+              <span><strong>Background image</strong><small>Choose an image from your device</small></span>
+              <div class="settings-background-actions">
+                <label class="button button-outline background-picker" for="background-image-input">Choose image</label>
+                <input id="background-image-input" class="visually-hidden" type="file" accept="image/*" aria-label="Choose a background image">
+                <button id="clear-background-button" class="button button-quiet clear-background-button" type="button" hidden>Clear</button>
+              </div>
+            </div>
+          </section>
+          <div class="settings-account-actions">
+            <button id="logout-button" class="button button-outline" type="button">Log out</button>
+            <button id="delete-account-button" class="button button-danger" type="button">Delete account</button>
+          </div>
+        </div>
+      </dialog>
+    </div>
+  </body>
+</html>

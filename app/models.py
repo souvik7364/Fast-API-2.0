@@ -1,4 +1,4 @@
-from sqlalchemy import CheckConstraint, Column, ForeignKey, Index, Integer, String, Boolean, UniqueConstraint
+from sqlalchemy import CheckConstraint, Column, ForeignKey, Index, Integer, String, Boolean, Text, UniqueConstraint
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql.expression import text
 from sqlalchemy.sql.sqltypes import TIMESTAMP
@@ -53,7 +53,7 @@ class Reply(Base):
     __tablename__ = "replies"
 
     id = Column(Integer, primary_key=True, nullable=False)
-    content = Column(String(280), nullable=False)
+    content = Column(Text, nullable=False)
     created_at = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text("now()"))
     post_id = Column(Integer, ForeignKey("posts.id", ondelete="CASCADE"), nullable=False)
     owner_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
